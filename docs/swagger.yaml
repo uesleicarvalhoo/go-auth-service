@@ -1,0 +1,382 @@
+definitions:
+  entity.User:
+    properties:
+      active:
+        default: true
+        type: boolean
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - email
+    - id
+    - name
+    - phone
+    type: object
+  handler.MessageJSON:
+    properties:
+      message:
+        type: string
+    type: object
+  schemas.JwtToken:
+    properties:
+      expiration:
+        type: integer
+      token:
+        type: string
+    type: object
+  schemas.Login:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  schemas.LoginResponse:
+    properties:
+      access_token:
+        type: string
+      message:
+        type: string
+      refresh_token:
+        $ref: '#/definitions/schemas.JwtToken'
+    type: object
+  schemas.SendRecoveryPasswordPayload:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  schemas.SignUp:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+    required:
+    - email
+    - name
+    - password
+    - phone
+    type: object
+info:
+  contact: {}
+paths:
+  /api/health-check:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+      summary: Return status of Service
+      tags:
+      - General
+  /api/v1/auth/authorize:
+    post:
+      consumes:
+      - application/json
+      description: Check if acess token is valid
+      parameters:
+      - description: Acess token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+      summary: Check user authentication
+      tags:
+      - Auth
+  /api/v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Generate a new access token
+      parameters:
+      - description: User data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.Login'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.LoginResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+      summary: Get user access token
+      tags:
+      - Auth
+  /api/v1/auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Logout current user and expire access token
+      parameters:
+      - description: Acess token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+      summary: Logout user
+      tags:
+      - Auth
+  /api/v1/auth/recovery-password:
+    post:
+      consumes:
+      - application/json
+      description: Send new token for password recovery
+      parameters:
+      - description: User data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.SendRecoveryPasswordPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+      summary: Send recovery password token
+      tags:
+      - Auth
+  /api/v1/auth/refresh-access-token:
+    post:
+      consumes:
+      - application/json
+      description: Return a new access token
+      parameters:
+      - description: Acess token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.JwtToken'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+      summary: Refresh user access token
+      tags:
+      - Auth
+  /api/v1/auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Change user password
+      parameters:
+      - description: Recovery data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.SendRecoveryPasswordPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+      summary: Reset password
+      tags:
+      - Auth
+  /api/v1/auth/signup:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.SignUp'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entity.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+      summary: Register new user true
+      tags:
+      - Auth
+  /api/v1/user/me:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Acess token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+      summary: Delete current user
+      tags:
+      - User
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Acess token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+      summary: Get current user data
+      tags:
+      - User
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Acess token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.MessageJSON'
+      summary: Update current user data
+      tags:
+      - User
+swagger: "2.0"

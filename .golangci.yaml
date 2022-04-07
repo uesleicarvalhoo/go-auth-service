@@ -1,0 +1,41 @@
+run:
+  deadline: 5m
+  tests: true
+
+linters:
+  enable-all: true
+  disable:
+    # Deprecated
+    - maligned
+    - scopelint
+    - golint
+    - interfacer
+    - exhaustivestruct
+    # Not avaliable from go v1.18
+    - bodyclose
+    - contextcheck
+    - nilerr
+    - noctx
+    - rowserrcheck
+    - sqlclosecheck
+    - structcheck
+    - tparallel
+    - unparam
+    - wastedassign
+    # Only Disabled
+    - funlen
+    - exhaustruct
+    - ireturn
+    - wrapcheck
+    - varnamelen
+    - goerr113
+
+linters-settings:
+  lll:
+    line-length: 120
+
+  tagliatelle:
+    case:
+      rules:
+        json: snake
+        yaml: snake
