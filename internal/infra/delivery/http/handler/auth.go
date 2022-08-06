@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -170,7 +171,12 @@ func (h *Handler) Authorize(c *gin.Context) {
 		return
 	}
 
-	userID, err := h.AuthSvc.ValidateAccessToken(ctx, payload.Token)
+	accessToken := payload.Token
+	if idx := strings.Index(payload.Token, " "); idx != -1 {
+		accessToken = payload.Token[idx+1:]
+	}
+
+	userID, err := h.AuthSvc.ValidateAccessToken(ctx, accessToken)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, MessageJSON{Message: "Invalid token"})
 		trace.AddSpanError(span, err)
